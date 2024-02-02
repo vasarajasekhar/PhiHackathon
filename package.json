@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/react-beautiful-dnd": "^13.1.4",
     "add": "^2.0.6",
+    "axios": "^1.6.7",
     "country-list": "^2.3.0",
     "ffmpeg.js": "^4.2.9003",
     "firebase": "^9.17.1",

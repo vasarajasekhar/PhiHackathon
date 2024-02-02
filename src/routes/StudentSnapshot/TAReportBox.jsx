@@ -3,12 +3,15 @@ import Popup from "../../components/Popup";
 import {arrayUnion, doc, setDoc} from "firebase/firestore";
 import db, {deleteAssignedTA} from "../../firebase/firestore";
 import DateViewer from "../../components/DateViewer";
+import {Bars} from "react-loader-spinner";
+import taApiRequest from "../../firebase/aiTa";
 
 function ReportBox(props) {
     const [displayValue, setDisplayValue] = React.useState("none");
 
     const [status, setStatus] = React.useState(props.status[props.status.length-1]);
     const [popupOpen, setPopupOpen] = React.useState(false);
+    const [loadingTrigger, setLoadingTrigger] = React.useState(false);
 
     async function modifyStatus(event) {
         const docRef = doc(db, "studentData", props.studentId, "taData", props.taID);
@@ -19,6 +22,12 @@ function ReportBox(props) {
         }, {merge: true});
         alert("Modified");
         setPopupOpen(false);
+    }
+
+    async function aiTa() {
+        setLoadingTrigger(true);
+        await taApiRequest([props.intro, props.taName], props.studentId);
+        setLoadingTrigger(false);
     }
 
     function handleMouseOver(event) {
@@ -52,6 +61,19 @@ function ReportBox(props) {
     return (
         <div className="box" id={props.id} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
             <link rel="stylesheet" href="/CSS/form.css"/>
+            <Popup trigger={loadingTrigger} setPopupEnabled={setLoadingTrigger} closeAllowed={false}>
+                <div style={{height: "85%", display: "flex", alignItems: "center", justifyContent: "center"}}>
+                    {<Bars
+                        height="80"
+                        width="80"
+                        radius="9"
+                        color="black"
+                        ariaLabel="loading"
+                        wrapperStyle
+                        wrapperClass
+                    />}
+                </div>
+            </Popup>
             {
                 popupOpen ?
                     <Popup trigger={popupOpen} setPopupEnabled={setPopupOpen} closeAllowed={true}>
@@ -162,6 +184,10 @@ function ReportBox(props) {
                         <button className="resetbutton editBtn" onClick={handleEdit}><i className="fa-solid fa-pencil"></i></button>
                         <button className="submitbutton deleteBtn" onClick={handleDelete}><i className="fa-solid fa-trash-can"></i></button>
                         <button className="submitbutton" onClick={() => {setPopupOpen(true)}}>Modify Status</button>
+                        {
+                            role === "admin" ? 
+                                <button className="submitbutton" onClick={async () => {await aiTa()}}>Generate TA</button> : ""
+                        }
                     </div>: ""
             }
         </div>
